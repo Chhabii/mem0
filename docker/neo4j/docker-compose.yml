@@ -1,0 +1,30 @@
+services:
+  neo4j:
+    container_name: neo4j-mem0
+    image: neo4j:5.26.6-community
+    ports:
+      - "7474:7474" # http
+      - "7687:7687" # bolt
+
+    environment:
+      - NEO4J_AUTH=${NEO4J_USERNAME}/${NEO4J_PASSWORD}
+      - NEO4JLABS_PLUGINS=["apoc","genai"] #enabling APOC and GenAI Plugin
+
+    volumes:
+      - ./volumes/data:/data
+      - ./volumes/logs:/logs
+      - ./volumes/conf:/conf
+      - ./volumes/import:/var/lib/neo4j/import
+      - ./volumes/plugins:/plugins
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u ${NEO4J_USERNAME} -p ${NEO4J_PASSWORD} 'RETURN 1'"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
+
+networks:
+  default:
+    name: neo4j-network
+
+

@@ -1,0 +1,4 @@
+volumes/
+.env
+.venv/*
+.history
