@@ -1,0 +1,38 @@
+networks:
+  redis-network-mem0:
+services:
+  redis:
+    container_name: redis-cache-mem0
+    image: redis:8.0
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --appendfsync everysec
+    volumes:
+      - ./volumes/data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 10s
+    networks:
+      - redis-network-mem0
+
+    # optional: redis web interface
+  redisinsight:
+    container_name: redisinsight-mem0
+    image: redis/redisinsight:latest
+    ports:
+      - "5540:5540"
+    volumes:
+      - ./volumes/redisinsight:/data
+    environment:
+      - REDIS_HOST=redis-cache-mem0
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      - redis
+    networks:
+      - redis-network-mem0
